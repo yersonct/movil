@@ -1,0 +1,12 @@
+.login-wrap {
+  display: grid; gap: 18px; margin-top: 8vh;
+}
+.iso { width: 92px; margin: 0 auto 8px; display: block; }
+.title { text-align: center; color: var(--anpr-text); margin-bottom: 8px; }
+
+ion-item.anpr-input { margin-bottom: 12px; }
+
+.forgot, .register {
+  text-align: right; color: var(--anpr-muted); font-size: 0.9rem; margin: 4px 4px 12px;
+}
+.register { text-align: center; margin-top: 10px; }

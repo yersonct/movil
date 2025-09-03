@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'ANPR-APP',
+  appName: 'ANPR-VISION',
   webDir: 'www'
 };
 
