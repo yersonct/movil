@@ -35,3 +35,17 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+
+ion-header {
+  ion-toolbar {
+    --border-width: 0;
+    --border-color: transparent;
+    --box-shadow: none;
+  }
+
+  /* fuerza a quitar el borde que Ionic agrega */
+  ion-toolbar::after {
+    background: none !important;
+  }
+}

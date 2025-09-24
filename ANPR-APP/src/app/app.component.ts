@@ -17,7 +17,7 @@ import { filter } from 'rxjs';
 })
 export class AppComponent  implements OnInit {
   public appPages = [
-    {title: 'Inicio', url: '/home', icon: 'home'},
+    {title: 'Inicio', url: '/tabs/home', icon: 'home'},
     { title: 'Estacionamiento', url: '/in-parking', icon: 'golf' },
   //  { title: 'Dashboard', url: 'pages/dashboard', icon: 'grid' },
     { title: 'Vehículos', url: '/folder/trash', icon: 'car-sport' },
@@ -69,10 +69,16 @@ export class AppComponent  implements OnInit {
       await this.menuController.swipeGesture(true, 'main-menu');
     }
   }
-   private async loadUserInfo() {
+  //  private async loadUserInfo() {
+  //   this.username = await this.general.getUsername();   // <- obtiene de Preferences
+  //   this.roles = await this.general.getUserRoles();     // <- obtiene de Preferences
+  // }
+
+    private async loadUserInfo() {
     this.username = await this.general.getUsername();   // <- obtiene de Preferences
     this.roles = await this.general.getUserRoles();     // <- obtiene de Preferences
   }
+
 // Cerrar el menú
   async closeMenu() {
     await this.menuController.close('main-menu');

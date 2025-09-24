@@ -1,297 +1,163 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { IonContent, IonHeader, IonTitle, IonToolbar, IonButtons, IonMenuButton } from '@ionic/angular/standalone';
 import { IonicModule } from '@ionic/angular';
+import { firstValueFrom } from 'rxjs';
 import { GeneralService } from 'src/app/generic/services/general.service';
+import { VehicleDto } from 'src/app/generic/models/IEntitys';
+import { FormatDatePipe } from "../../shared/formatDate/format-date-pipe";
 
-interface ParkingZone {
-  id: string;
-  name: string;
-  occupied: number;
-  total: number;
-  color: string;
-  percentage: number;
-  status: 'available' | 'moderate' | 'busy' | 'full';
+type FilterKey = 'all' | 'car' | 'moto' | 'bike';
+
+// interface VehicleDto {
+//   id: number;
+//   plate: string;
+//   color: string;
+//   typeVehicleId: number;
+//   typeVehicle?: string | null; // "Auto" | "Moto" | "Bicicletas"
+//   clientId: number;
+//   client?: string | null;
+//   asset: boolean;
+//   isDeleted: boolean;
+// }
+interface ApiResponse<T> {
+  data: T;
+  success: boolean;
+  message?: string;
+  details?: any;
 }
 
-interface ActivityItem {
-  plate: string;
-  type: 'entrada' | 'salida';
-  time: string;
-  isRecent: boolean;
-}
+/** Mapa de imágenes por tipo */
+const TYPE_IMAGE_MAP_ID: Record<number, string> = {
+  1: 'assets/images/vehiculos/auto.png',
+  4: 'assets/images/vehiculos/moto.png',
+  5: 'assets/images/vehiculos/bici.png',
+  // agrega otros ids si corresponde
+};
+const TYPE_IMAGE_MAP_NAME: Record<string, string> = {
+  'auto': 'assets/images/vehiculos/auto.png',
+  'moto': 'assets/images/vehiculos/moto.png',
+  'bicicletas': 'assets/images/vehiculos/bici.png',
+  'Bicicletas': 'assets/images/vehiculos/bici.png',
+  'bicicleta': 'assets/images/vehiculos/bici.png',
+  'car': 'assets/images/vehiculos/auto.png',
+  'motorcycle': 'assets/images/vehiculos/moto.png',
+};
+const DEFAULT_VEHICLE_IMG = 'assets/images/vehiculos/default.png';
+const OTHER_VEHICLE_IMG = 'assets/images/vehiculos/otros.png';
 
-interface SlideData {
-  id: number;
-  icon: string;
-  value: string;
-  label: string;
-  trend: string;
-  trendDirection: 'up' | 'down';
-  gradientClass: string;
+function normalizeTypeName(name?: string | null) {
+  return (name || '').trim().toLowerCase();
 }
 
 @Component({
   selector: 'app-home',
+  standalone: true,
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  standalone: true,
-  imports: [CommonModule, FormsModule, IonicModule]
+  imports: [CommonModule, FormsModule, IonicModule, FormatDatePipe]
 })
-export class HomePage implements OnInit {
-   username: string | null = null;
-    currentSlideIndex: number = 0;
-  totalSlides: number = 3;
+export class HomePageC implements OnInit, OnDestroy {
+  username: string | null = null;
+
+  // Vehículos
+  selectedFilter: FilterKey = 'all';
+  allVehicles: VehicleDto[] = [];
+  selectedVehicle: VehicleDto | null = null;
+  loadingVehicles = true;
+
+  // (Si aún usas tu slider, puedes mantenerlo)
   private slideInterval: any;
+  currentSlideIndex = 0;
+  totalSlides = 3;
 
-  // Datos del slider
-  slides: SlideData[] = [
-    {
-      id: 1,
-      icon: 'car-sport-outline',
-      value: '45',
-      label: 'Espacios Disponibles',
-      trend: '+5 en la última hora',
-      trendDirection: 'up',
-      gradientClass: 'gradient-primary'
-    },
-    {
-      id: 2,
-      icon: 'speedometer-outline',
-      value: '2.3min',
-      label: 'Tiempo Promedio Entrada',
-      trend: '-30s vs ayer',
-      trendDirection: 'down',
-      gradientClass: 'gradient-success'
-    },
-    {
-      id: 3,
-      icon: 'analytics-outline',
-      value: '92%',
-      label: 'Precisión ANPR',
-      trend: 'Excelente rendimiento',
-      trendDirection: 'up',
-      gradientClass: 'gradient-warning'
-    }
-  ];
+  constructor(private general: GeneralService) {}
 
-  // Datos de las zonas
-  parkingZones: ParkingZone[] = [
-    {
-      id: 'A',
-      name: 'Zona A',
-      occupied: 15,
-      total: 20,
-      color: '#3b82f6',
-      percentage: 75,
-      status: 'busy'
-    },
-    {
-      id: 'B',
-      name: 'Zona B',
-      occupied: 8,
-      total: 15,
-      color: '#22c55e',
-      percentage: 53,
-      status: 'moderate'
-    },
-    {
-      id: 'C',
-      name: 'Zona C',
-      occupied: 22,
-      total: 25,
-      color: '#f59e0b',
-      percentage: 88,
-      status: 'full'
-    },
-    {
-      id: 'D',
-      name: 'Zona VIP',
-      occupied: 3,
-      total: 10,
-      color: '#8b5cf6',
-      percentage: 30,
-      status: 'available'
-    }
-  ];
-
-  // Actividad reciente
-  recentActivity: ActivityItem[] = [
-    {
-      plate: 'ABC-123',
-      type: 'entrada',
-      time: 'Hace 2min',
-      isRecent: true
-    },
-    {
-      plate: 'XYZ-789',
-      type: 'salida',
-      time: 'Hace 5min',
-      isRecent: false
-    }
-  ];
-
-  // Estadísticas generales
-  totalSpaces: number = 200;
-  occupiedSpaces: number = 155;
-  availableSpaces: number = 45;
-  occupancyPercentage: number = 77.5;
-
-  // Estadísticas de flujo
-  todayEntries: number = 24;
-  todayExits: number = 18;
-
-  // Métricas de rendimiento
-  anprAccuracy: number = 92;
-  systemUptime: number = 98;
-  responseTime: string = '2.1s';
-
-  // Ingresos
-  dailyRevenue: string = '$1,245,000';
-  monthlyRevenue: string = '$28,890,000';
-  revenueGrowth: number = 12;
-
-  constructor(private general: GeneralService) { }
-
-   async ngOnInit() {
+  async ngOnInit() {
     await this.loadUserInfo();
+    await this.loadVehiclesFromApi();
     this.initializeSlider();
   }
 
-     private async loadUserInfo() {
-    this.username = await this.general.getUsername();   // <- obtiene de Preferences
+  ngOnDestroy() {
+    if (this.slideInterval) clearInterval(this.slideInterval);
   }
 
-   private initializeSlider(): void {
-    // Auto-play del slider cada 4 segundos
-    this.slideInterval = setInterval(() => {
-      this.nextSlide();
-    }, 4000);
+  private async loadUserInfo() {
+    this.username = await this.general.getUsername();
   }
 
-  // Métodos del slider
-  nextSlide(): void {
-    this.currentSlideIndex = (this.currentSlideIndex + 1) % this.totalSlides;
-    this.updateSlideDisplay();
+  private mapFilterToType(filter: FilterKey): string | null {
+    if (filter === 'car') return 'Auto';
+    if (filter === 'moto') return 'Moto';
+    if (filter === 'bike') return 'Bicicletas';
+    return null; // all
   }
 
-  goToSlide(index: number): void {
-    this.currentSlideIndex = index;
-    this.updateSlideDisplay();
-  }
-
-  private updateSlideDisplay(): void {
-    const slides = document.querySelectorAll('.slide');
-    const dots = document.querySelectorAll('.dot');
-
-    // Remover clases activas
-    slides.forEach((slide, index) => {
-      slide.classList.remove('active', 'prev');
-      if (index === this.currentSlideIndex) {
-        slide.classList.add('active');
+  async loadVehiclesFromApi() {
+    this.loadingVehicles = true;
+    try {
+      const clientId = await this.general.getClientId();
+      if (!clientId) {
+        this.allVehicles = [];
+        this.selectedVehicle = null;
+        return;
       }
-    });
-
-    // Actualizar dots
-    dots.forEach((dot, index) => {
-      dot.classList.remove('active');
-      if (index === this.currentSlideIndex) {
-        dot.classList.add('active');
-      }
-    });
-  }
-
-  // Métodos utilitarios
-  getZoneStatusColor(status: string): string {
-    const statusColors: { [key: string]: string } = {
-      'available': 'success',
-      'moderate': 'primary',
-      'busy': 'warning',
-      'full': 'danger'
-    };
-    return statusColors[status] || 'medium';
-  }
-
-  getActivityIcon(type: 'entrada' | 'salida'): string {
-    return type === 'entrada' ? 'arrow-down-circle' : 'arrow-up-circle';
-  }
-
-  getActivityColor(type: 'entrada' | 'salida'): string {
-    return type === 'entrada' ? 'success' : 'primary';
-  }
-
-  // Métodos para acciones
-  onNotificationClick(): void {
-    console.log('Notificaciones clicked');
-    // Implementar navegación a notificaciones
-  }
-
-  onZoneClick(zone: ParkingZone): void {
-    console.log('Zone clicked:', zone);
-    // Implementar navegación a detalle de zona
-  }
-
-  refreshData(): void {
-    console.log('Refreshing data...');
-    // Implementar refresh de datos desde el servidor
-    this.loadParkingData();
-  }
-
-  private loadParkingData(): void {
-    // Aquí conectarías con tu servicio para obtener datos actualizados
-    // Por ejemplo:
-    // this.parkingService.getCurrentStatus().subscribe(data => {
-    //   this.availableSpaces = data.available;
-    //   this.occupiedSpaces = data.occupied;
-    //   // etc...
-    // });
-  }
-
-  // Método para formatear números
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
-    }).format(amount);
-  }
-
-  // Método para obtener el tiempo transcurrido
-  getTimeAgo(timestamp: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - timestamp.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Hace menos de 1min';
-    if (diffMins < 60) return `Hace ${diffMins}min`;
-
-    const diffHours = Math.floor(diffMins / 60);
-    return `Hace ${diffHours}h`;
-  }
-
-  // Método para obtener el color del indicador de capacidad
-  getCapacityColor(percentage: number): string {
-    if (percentage < 50) return 'success';
-    if (percentage < 80) return 'warning';
-    return 'danger';
-  }
-
-  // Simular datos en tiempo real (opcional)
-  private simulateRealTimeData(): void {
-    setInterval(() => {
-      // Simular cambios pequeños en los datos
-      const variation = Math.floor(Math.random() * 3) - 1; // -1, 0, o 1
-      this.availableSpaces = Math.max(0, Math.min(this.totalSpaces, this.availableSpaces + variation));
-      this.occupiedSpaces = this.totalSpaces - this.availableSpaces;
-      this.occupancyPercentage = Math.round((this.occupiedSpaces / this.totalSpaces) * 100 * 10) / 10;
-    }, 30000); // Cada 30 segundos
-  }
-
-ngOnDestroy() {
-    if (this.slideInterval) {
-      clearInterval(this.slideInterval);
+      const resp = await firstValueFrom(
+        this.general.get<ApiResponse<VehicleDto[]>>(`Vehicle/byClient/${clientId}`)
+      );
+      this.allVehicles = resp?.data ?? [];
+      this.autoPickFirst();
+    } catch (e) {
+      console.error('Error cargando vehículos', e);
+      this.allVehicles = [];
+      this.selectedVehicle = null;
+    } finally {
+      this.loadingVehicles = false;
     }
   }
 
+  get filteredVehicles(): VehicleDto[] {
+    const type = this.mapFilterToType(this.selectedFilter);
+    if (!type) return this.allVehicles;
+    return this.allVehicles.filter(v => (v.typeVehicle ?? '').toLowerCase() === type.toLowerCase());
+  }
+
+  onChangeFilter(f: FilterKey) {
+    this.selectedFilter = f;
+    this.autoPickFirst();
+  }
+
+  autoPickFirst() {
+    const list = this.filteredVehicles;
+    this.selectedVehicle = list.length > 0 ? list[0] : null;
+  }
+
+  onPick(v: VehicleDto) {
+    this.selectedVehicle = v;
+  }
+
+  getVehicleImg(v: VehicleDto | null): string {
+    if (!v) return DEFAULT_VEHICLE_IMG;
+
+    // 1) por ID
+    if (v.typeVehicleId != null && TYPE_IMAGE_MAP_ID[v.typeVehicleId]) {
+      return TYPE_IMAGE_MAP_ID[v.typeVehicleId];
+    }
+    // 2) por nombre
+    const key = normalizeTypeName(v.typeVehicle);
+    if (key && TYPE_IMAGE_MAP_NAME[key]) {
+      return TYPE_IMAGE_MAP_NAME[key];
+    }
+    // 3) fallback
+    return OTHER_VEHICLE_IMG;
+  }
+
+  // Slider demo (si lo usas)
+  private initializeSlider(): void {
+    this.slideInterval = setInterval(() => this.nextSlide(), 4000);
+  }
+  nextSlide(): void {
+    this.currentSlideIndex = (this.currentSlideIndex + 1) % this.totalSlides;
+  }
 }

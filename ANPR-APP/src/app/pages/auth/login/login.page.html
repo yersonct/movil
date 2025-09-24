@@ -5,42 +5,52 @@
 
     <form (ngSubmit)="login()" #f="ngForm" novalidate>
       <!-- Usuario -->
-      <ion-item class="anpr-input" lines="none">
-        <ion-input
+      <div class="form-group">
+        <input
+          type="text"
+          class="form-input"
           placeholder="Nombre de usuario"
           [(ngModel)]="LoginDto.username"
           name="username"
           required
           autocomplete="username"
-          inputmode="email">
-        </ion-input>
-        <ion-icon slot="end" name="send-outline"></ion-icon>
-      </ion-item>
+          inputmode="email"
+        />
+      </div>
 
       <!-- Contraseña -->
-      <ion-item class="anpr-input" lines="none">
-        <ion-input
+      <div class="form-group">
+        <input
           type="password"
+          class="form-input"
           placeholder="Contraseña"
           [(ngModel)]="LoginDto.password"
           name="password"
           required
-          autocomplete="current-password">
-        </ion-input>
-      </ion-item>
+          autocomplete="current-password"
+        />
+      </div>
 
+      <!-- Olvidaste contraseña -->
       <div class="forgot">
         ¿Olvidaste tu contraseña?
         <a class="anpr-link" (click)="restablecerContrasena()">Restablecer</a>
       </div>
 
-      <ion-button class="anpr-btn" expand="block" type="submit" [disabled]="loading || f.invalid">
-        <ion-spinner *ngIf="loading" name="dots"></ion-spinner>
-        <span *ngIf="!loading">Ingresar</span>
-      </ion-button>
+      <!-- Botón ingresar -->
+      <button class="primary-btn" type="submit" [disabled]="loading || f.invalid">
+        <ng-container *ngIf="!loading; else loadingTpl">
+          Ingresar
+        </ng-container>
+        <ng-template #loadingTpl>
+          <ion-spinner name="crescent"></ion-spinner>
+        </ng-template>
+      </button>
     </form>
 
-    <!-- Deja esto sin (click) para evitar error si no existe goRegister -->
-    <div class="register">¿No tienes cuenta? <span class="anpr-link">Registrarse</span></div>
+    <!-- Registrarse -->
+    <div class="register">
+      ¿No tienes cuenta? <span class="anpr-link">Registrarse</span>
+    </div>
   </div>
 </ion-content>

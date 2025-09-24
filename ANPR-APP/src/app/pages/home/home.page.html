@@ -1,291 +1,112 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>Inicio</ion-title>
+<ion-header class="header ion-no-border" [translucent]="true">
+  <ion-toolbar class="toolbar">
+    <div class="greeting">
+      <img class="avatar" src="assets/images/avatar.png" alt="avatar" />
+      <div class="hello">
+        <div class="tiny">Hola!</div>
+        <div class="name">{{ username }} 👋</div>
+      </div>
+    </div>
+
     <ion-buttons slot="end">
-      <ion-button fill="clear">
-        <ion-icon name="notifications-outline"></ion-icon>
+      <ion-button fill="clear" (click)="loadVehiclesFromApi()">
+        <ion-icon name="refresh-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">ANPR VISION</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content [fullscreen]="true" class="dark">
+  <div class="content-padder">
 
-  <!-- Sección de bienvenida -->
-  <div class="welcome-section">
-    <ion-card class="welcome-card">
-      <ion-card-content>
-        <div class="welcome-content">
-          <div class="welcome-text">
-            <h2>¡Hola, {{ username }}! 👋</h2>
-            <p>Bienvenido de nuevo</p>
-            <!-- <div class="live-indicator">
-              <div class="pulse-dot"></div>
-              <span>Sistema en línea</span>
-            </div> -->
-          </div>
+    <!-- Detalle del vehículo seleccionado -->
+    <div class="vehicle-card">
+      <div class="vehicle-title">
+        <div class="tiny muted">Mis Vehículos</div>
+        <ion-button fill="clear" size="small" (click)="loadVehiclesFromApi()">
+          <ion-icon name="refresh-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="vehicle-name">
+        <span *ngIf="selectedVehicle" class="status-badge"
+              [class.in]="selectedVehicle.isInside"
+              [class.out]="!selectedVehicle.isInside">
+          <ion-icon [name]="selectedVehicle.isInside ? 'enter-outline' : 'exit-outline'"></ion-icon>
+          {{ selectedVehicle.isInside ? 'En el estacionamiento' : 'Fuera del estacionamiento' }}
+        </span>
+      </div>
+
+      <div class="vehicle-image">
+        <ion-img [src]="getVehicleImg(selectedVehicle)" alt="vehículo"></ion-img>
+      </div>
+
+      <div class="stats-row" *ngIf="selectedVehicle">
+        <div class="stat-chip">
+          <div class="label">Color</div>
+          <div class="value">{{ selectedVehicle?.color || '—' }}</div>
         </div>
-      </ion-card-content>
-    </ion-card>
-  </div>
-
-  <!-- Slider automático de estadísticas principales -->
-  <div class="hero-slider">
-    <div class="slider-container">
-      <div class="slide active" id="slide1">
-        <ion-card class="hero-card gradient-primary">
-          <ion-card-content>
-            <div class="hero-content">
-              <ion-icon name="car-sport-outline" class="hero-icon"></ion-icon>
-              <div class="hero-stats">
-                <h1>45</h1>
-                <p>Espacios Disponibles</p>
-                <div class="trend up">↗ +5 en la última hora</div>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <div class="stat-chip">
+          <div class="label">Tipo</div>
+          <div class="value">{{ selectedVehicle?.typeVehicle || '—' }}</div>
+        </div>
+        <div class="stat-chip">
+          <div class="label">Hora de entrada</div>
+          <div class="value">{{ selectedVehicle?.activeEntryDate | formatDate }}</div>
+        </div>
       </div>
 
-      <div class="slide" id="slide2">
-        <ion-card class="hero-card gradient-success">
-          <ion-card-content>
-            <div class="hero-content">
-              <ion-icon name="speedometer-outline" class="hero-icon"></ion-icon>
-              <div class="hero-stats">
-                <h1>2.3min</h1>
-                <p>Tiempo Promedio Entrada</p>
-                <div class="trend down">↘ -30s vs ayer</div>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
-      </div>
+      <div class="battery-row">
+        <div class="battery-pill">
+          <ion-icon name="car-outline"></ion-icon>
+          Placa: <span>{{ selectedVehicle?.plate || '—' }}</span>
+        </div>
 
-      <div class="slide" id="slide3">
-        <ion-card class="hero-card gradient-warning">
-          <ion-card-content>
-            <div class="hero-content">
-              <ion-icon name="analytics-outline" class="hero-icon"></ion-icon>
-              <div class="hero-stats">
-                <h1>92%</h1>
-                <p>Precisión ANPR</p>
-                <div class="trend up">↗ Excelente rendimiento</div>
-              </div>
-            </div>
-          </ion-card-content>
-        </ion-card>
+        <ion-button class="round-btn" size="small">
+          <ion-icon name="information-circle-outline"></ion-icon>
+        </ion-button>
       </div>
     </div>
 
-    <div class="slider-dots">
-      <span class="dot active" onclick="currentSlide(1)"></span>
-      <span class="dot" onclick="currentSlide(2)"></span>
-      <span class="dot" onclick="currentSlide(3)"></span>
+    <!-- Filtros y carrusel -->
+    <div class="nearby">
+      <div class="nearby-top">
+        <div class="tiny muted">Mis Vehículos</div>
+      </div>
+
+      <div class="filters">
+        <button class="filter" [class.active]="selectedFilter==='all'" (click)="onChangeFilter('all')">
+          All
+        </button>
+        <button class="filter" [class.active]="selectedFilter==='car'" (click)="onChangeFilter('car')">
+          <ion-icon name="car-outline"></ion-icon> Cars
+        </button>
+        <button class="filter" [class.active]="selectedFilter==='moto'" (click)="onChangeFilter('moto')">
+          <ion-icon name="bicycle-outline"></ion-icon> Motorcycle
+        </button>
+        <button class="filter" [class.active]="selectedFilter==='bike'" (click)="onChangeFilter('bike')">
+          <ion-icon name="trail-sign-outline"></ion-icon> Bicycle
+        </button>
+      </div>
+
+      <div class="cards">
+        <div
+          class="veh-card"
+          *ngFor="let v of filteredVehicles"
+          (click)="onPick(v)"
+          [class.selected]="selectedVehicle?.id === v.id"
+        >
+          <div class="veh-img">
+            <ion-img [src]="getVehicleImg(v)" [alt]="v.plate"></ion-img>
+          </div>
+          <div class="veh-name">{{ v.plate }}</div>
+        </div>
+
+        <div class="veh-card empty" *ngIf="!loadingVehicles && filteredVehicles.length === 0">
+          <div class="veh-name">Sin vehículos</div>
+          <div class="veh-price tiny muted">No hay resultados para este filtro</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- Grid de información en tiempo real -->
-  <div class="realtime-grid">
-    <!-- <h3 class="section-title">
-      <ion-icon name="pulse-outline"></ion-icon>
-      Estado en Tiempo Real
-    </h3> -->
-
-    <div class="info-cards">
-      <!-- Tarjeta de capacidad visual -->
-      <!-- <ion-card class="capacity-visual-card">
-        <ion-card-content>
-          <div class="parking-visualization">
-            <h4>Mapa de Ocupación</h4>
-            <div class="parking-grid">
-              <div class="parking-row">
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot available"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot available"></div>
-              </div>
-              <div class="parking-row">
-                <div class="parking-spot available"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot available"></div>
-                <div class="parking-spot occupied"></div>
-              </div>
-              <div class="parking-row">
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot available"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot occupied"></div>
-                <div class="parking-spot available"></div>
-              </div>
-            </div>
-            <div class="legend">
-              <div class="legend-item">
-                <div class="legend-color available"></div>
-                <span>Disponible</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-color occupied"></div>
-                <span>Ocupado</span>
-              </div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card> -->
-
-      <!-- Tarjeta de flujo de vehículos -->
-      <!-- <ion-card class="flow-card">
-        <ion-card-content>
-          <div class="flow-header">
-            <h4>Flujo Vehicular</h4>
-            <ion-chip color="success" class="live-chip">
-              <div class="live-dot"></div>
-              <ion-label>En vivo</ion-label>
-            </ion-chip>
-          </div>
-          <div class="flow-stats">
-            <div class="flow-item">
-              <ion-icon name="arrow-down-circle" class="flow-icon in"></ion-icon>
-              <div>
-                <span class="flow-number">24</span>
-                <p>Entradas hoy</p>
-              </div>
-            </div>
-            <div class="flow-item">
-              <ion-icon name="arrow-up-circle" class="flow-icon out"></ion-icon>
-              <div>
-                <span class="flow-number">18</span>
-                <p>Salidas hoy</p>
-              </div>
-            </div>
-          </div>
-          <div class="activity-timeline">
-            <div class="timeline-item">
-              <div class="timeline-dot recent"></div>
-              <span>ABC-123 • Entrada • Hace 2min</span>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot"></div>
-              <span>XYZ-789 • Salida • Hace 5min</span>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card> -->
-
-      <!-- Tarjeta de zonas del parqueadero -->
-      <!-- <ion-card class="zones-card">
-        <ion-card-content>
-          <h4>Distribución por Zonas</h4>
-          <div class="zones-list">
-            <div class="zone-item">
-              <div class="zone-indicator zona-a"></div>
-              <div class="zone-info">
-                <span class="zone-name">Zona A</span>
-                <span class="zone-capacity">15/20</span>
-              </div>
-              <div class="zone-status busy">75%</div>
-            </div>
-            <div class="zone-item">
-              <div class="zone-indicator zona-b"></div>
-              <div class="zone-info">
-                <span class="zone-name">Zona B</span>
-                <span class="zone-capacity">8/15</span>
-              </div>
-              <div class="zone-status moderate">53%</div>
-            </div>
-            <div class="zone-item">
-              <div class="zone-indicator zona-c"></div>
-              <div class="zone-info">
-                <span class="zone-name">Zona C</span>
-                <span class="zone-capacity">22/25</span>
-              </div>
-              <div class="zone-status full">88%</div>
-            </div>
-            <div class="zone-item">
-              <div class="zone-indicator zona-d"></div>
-              <div class="zone-info">
-                <span class="zone-name">Zona VIP</span>
-                <span class="zone-capacity">3/10</span>
-              </div>
-              <div class="zone-status available">30%</div>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card> -->
-
-      <!-- Tarjeta de rendimiento del sistema -->
-      <!-- <ion-card class="performance-card">
-        <ion-card-content>
-          <div class="performance-header">
-            <h4>Rendimiento del Sistema</h4>
-            <ion-badge color="success">Óptimo</ion-badge>
-          </div>
-          <div class="performance-metrics">
-            <div class="metric">
-              <div class="metric-circle" style="--progress: 92%">
-                <span>92%</span>
-              </div>
-              <p>Precisión ANPR</p>
-            </div>
-            <div class="metric">
-              <div class="metric-circle" style="--progress: 98%">
-                <span>98%</span>
-              </div>
-              <p>Uptime Sistema</p>
-            </div>
-            <div class="metric">
-              <div class="metric-circle" style="--progress: 85%">
-                <span>2.1s</span>
-              </div>
-              <p>Tiempo Respuesta</p>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card> -->
-
-      <!-- Tarjeta de ingresos y tendencias -->
-      <!-- <ion-card class="revenue-card">
-        <ion-card-content>
-          <div class="revenue-header">
-            <h4>Resumen Financiero</h4>
-            <ion-chip color="tertiary">
-              <ion-icon name="trending-up"></ion-icon>
-              <ion-label>+12%</ion-label>
-            </ion-chip>
-          </div>
-          <div class="revenue-stats">
-            <div class="revenue-item">
-              <h3>$1,245,000</h3>
-              <p>Ingresos del día</p>
-            </div>
-            <div class="revenue-divider"></div>
-            <div class="revenue-item">
-              <h3>$28,890,000</h3>
-              <p>Ingresos del mes</p>
-            </div>
-          </div>
-          <div class="revenue-chart">
-            <div class="chart-bar" style="height: 30%"></div>
-            <div class="chart-bar" style="height: 60%"></div>
-            <div class="chart-bar" style="height: 45%"></div>
-            <div class="chart-bar" style="height: 80%"></div>
-            <div class="chart-bar" style="height: 100%"></div>
-            <div class="chart-bar" style="height: 70%"></div>
-            <div class="chart-bar" style="height: 90%"></div>
-          </div>
-        </ion-card-content>
-      </ion-card> -->
-    </div>
-  </div>
-
 </ion-content>

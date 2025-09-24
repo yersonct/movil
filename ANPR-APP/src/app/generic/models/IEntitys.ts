@@ -64,3 +64,44 @@ slotsId: number;
 slots: string;
 }
 
+// login-response.types.ts (opcional pero recomendado)
+export interface LoginClient {
+  id: number;
+  personId: number;
+}
+
+export interface LoginData {
+  userId: number;
+  username: string;
+  roles: string[];
+  token: string;
+  personId: number;
+  firstName: string;
+  lastName: string;
+  client: LoginClient;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message?: string;
+  data?: LoginData;
+  errors?: string[];
+}
+export interface VehicleDto {
+  id: number;
+  plate: string;
+  color: string;
+  typeVehicleId: number;
+  typeVehicle?: string | null;
+  clientId: number;
+  client?: string | null;
+  asset: boolean;
+  isDeleted: boolean;
+
+  // ✅ nuevo
+  isInside: boolean;              // mapea a IsInside
+  activeRegisteredId?: number | null;
+  activeSlotId?: number | null;
+  activeSlotName?: string | null;
+  activeEntryDate?: string | null; // ISO
+}
