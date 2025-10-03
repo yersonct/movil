@@ -74,3 +74,28 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
 }
+.password-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-group .form-input {
+  width: 100%;
+  padding-right: 45px; // espacio para el ojito
+  border-radius: 6px;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 12px;
+  font-size: 24px;
+  color: #00a6ff;   // Azul brillante
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.eye-icon:hover {
+  color: #ff6600;   // Cambia a naranja al pasar el mouse
+}
+

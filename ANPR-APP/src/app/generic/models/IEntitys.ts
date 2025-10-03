@@ -33,11 +33,12 @@ export interface FormModule extends IBaseEntity {
 }
 
 export interface User extends IBaseEntity {
-  userName: string;
+  username: string;
   email: string;
   password: string;
   personId: number;
   personName: string;
+  
 }
 
 export interface Vehicle extends IBaseEntity {

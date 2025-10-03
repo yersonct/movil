@@ -19,17 +19,25 @@
       </div>
 
       <!-- Contraseña -->
-      <div class="form-group">
-        <input
-          type="password"
-          class="form-input"
-          placeholder="Contraseña"
-          [(ngModel)]="LoginDto.password"
-          name="password"
-          required
-          autocomplete="current-password"
-        />
-      </div>
+    <div class="form-group password-group">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        class="form-input"
+        placeholder="Contraseña"
+        [(ngModel)]="LoginDto.password"
+        name="password"
+        required
+        autocomplete="current-password"
+      />
+
+      <!-- Ojito dentro del input -->
+        <ion-icon
+          [name]="showPassword ?   'eye-outline':'eye-off-outline'"
+          class="eye-icon"
+          (click)="togglePassword()">
+        </ion-icon>
+    </div>
+
 
       <!-- Olvidaste contraseña -->
       <div class="forgot">

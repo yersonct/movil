@@ -7,6 +7,8 @@ import { firstValueFrom } from 'rxjs';
 import { GeneralService } from 'src/app/generic/services/general.service';
 import { HelperService } from 'src/app/generic/services/helper-service.service';
 import { LoginResponse } from 'src/app/generic/models/IEntitys';
+import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
+import { addIcons } from 'ionicons';
 
 // interface LoginResponse {
 //   success: boolean;
@@ -18,7 +20,10 @@ import { LoginResponse } from 'src/app/generic/models/IEntitys';
 //   };
 //   errors?: string[];
 // }
-
+  addIcons({
+  'eye-outline': eyeOutline,
+  'eye-off-outline': eyeOffOutline
+});
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -29,12 +34,16 @@ import { LoginResponse } from 'src/app/generic/models/IEntitys';
 export class LoginPage {
   LoginDto = { username: '', password: '' };
   loading = false;
-
+ showPassword = false;
   constructor(
     private general: GeneralService,
     private router: Router,
     private helper: HelperService // 👈 usar helper
   ) {}
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
 
   async login() {
     console.log("Método login() disparado", this.LoginDto);

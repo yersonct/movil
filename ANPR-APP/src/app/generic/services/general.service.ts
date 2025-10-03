@@ -4,9 +4,26 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from 'src/environments/environment.prod';
+import { User,Vehicle } from '../models/IEntitys';
 
 @Injectable({ providedIn: 'root' })
 export class GeneralService {
+    // resetPassword(arg0: { oldPassword: string; newPassword: string; }) {
+    //     throw new Error('Method not implemented.');
+    // }
+    // Paso 1: solicitar código
+  requestPasswordReset(email: string) {
+    return this.post<any>('User/request-password-reset', { email });
+  }
+
+  //  Paso 2: verificar código
+  verifyCode(email: string, code: string) {
+    return this.post<any>('User/verify-code', { email, code });
+  }
+
+  resetPassword(email: string, code: string, newPassword: string) {
+    return this.post<any>('User/reset-password', { email, code, newPassword });
+  }
   private baseUrl = (environment as any).apiURL || (environment as any).apiUrl;
 
   constructor(private http: HttpClient) {}
@@ -104,6 +121,21 @@ async getClientId(): Promise<number | null> {
       .get<T>(`${this.baseUrl}/${endpoint}/${id}`)
       .pipe(catchError((err) => this.handleError(err)));
   }
+
+// lo que se muestra en el profile
+
+  getUserById(id: number) {
+    return this.getById<User>('User', id);
+  }
+ getVehiclesByClientId(clientId: number) {
+  return this.get<Vehicle[]>(`Vehicle/select?clientId=${clientId}`);
+  }
+  updateUser(user: Partial<User>) {
+    return this.put<User>('User', user);
+  }
+
+
+// --------------------------------------------------------------------------------
 
   post<T>(endpoint: string, body: unknown): Observable<T> {
     return this.http
