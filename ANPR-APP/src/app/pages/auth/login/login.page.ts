@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { ModalController } from '@ionic/angular';
+import { ResetPasswordModalComponent } from '../reset-password.modal.ts/reset-password.modal';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -38,7 +40,8 @@ export class LoginPage {
   constructor(
     private general: GeneralService,
     private router: Router,
-    private helper: HelperService // 👈 usar helper
+    private helper: HelperService, // 👈 usar helper
+    private modalCtrl: ModalController // 👈 nuevo
   ) {}
 
   togglePassword() {
@@ -87,7 +90,14 @@ export class LoginPage {
   }
 }
 
-  restablecerContrasena() {
-    this.router.navigate(['/reset-password']);
-  }
+async restablecerContrasena() {
+  const modal = await this.modalCtrl.create({
+    component: ResetPasswordModalComponent,
+    breakpoints: [0, 0.6, 0.9],
+    initialBreakpoint: 0.6,
+    cssClass: 'reset-modal'
+  });
+  await modal.present();
+}
+
 }
