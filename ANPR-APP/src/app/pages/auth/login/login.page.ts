@@ -49,7 +49,8 @@ export class LoginPage {
   }
 
   async login() {
-    console.log("Método login() disparado", this.LoginDto);
+  console.log("Método login() disparado", this.LoginDto);
+
   if (!this.LoginDto.username || !this.LoginDto.password) {
     this.helper.showAlert('Por favor ingresa usuario y contraseña', 'Validación');
     return;
@@ -65,22 +66,33 @@ export class LoginPage {
 
     const data = res?.data;
     if (res?.success && data?.token) {
-      // Guardar sesión
-      await this.general.setAuthToken(data.token);
-      await this.general.setUserRoles(data.roles || []);
-      await this.general.setUsername(this.LoginDto.username);
-      await this.general.setUserId(data.userId);
+  // ✅ Guardar sesión básica
+  await this.general.setAuthToken(data.token);
+  await this.general.setUserRoles(data.roles || []);
+  await this.general.setUsername(this.LoginDto.username);
+  await this.general.setUserId(data.userId);
 
-      // 👇 NUEVO: guardar clientId
-      if (data.client?.id != null) {
-        await this.general.setClientId(data.client.id);
-      }
+  // 🔹 Intentar obtener el clientId desde el backend
+  try {
+    const clientResp = await firstValueFrom(
+      this.general.get<any>(`Client/by-user/${data.userId}`)
+    );
 
-      await this.helper.showToast(res.message || 'Bienvenido 👋');
-      this.router.navigateByUrl('/tabs/home', { replaceUrl: true });
+    if (clientResp?.success && clientResp.data?.id) {
+      await this.general.setClientId(clientResp.data.id);
+      console.log('🧠 Client ID guardado correctamente:', clientResp.data.id);
     } else {
-      this.helper.showAlert(res?.message || 'Credenciales incorrectas');
+      console.warn('⚠️ Este usuario no tiene cliente asociado.');
     }
+  } catch (error) {
+    console.error('❌ Error obteniendo clientId:', error);
+  }
+
+  await this.helper.showToast(res.message || 'Bienvenido 👋');
+  this.router.navigateByUrl('/tabs/home', { replaceUrl: true });
+} else {
+  this.helper.showAlert(res?.message || 'Credenciales incorrectas');
+}
   } catch (err: any) {
     this.helper.showAlert(err.message || 'Error inesperado');
     console.error('Error en login:', err);
@@ -89,6 +101,7 @@ export class LoginPage {
     loader.dismiss();
   }
 }
+
 
 async restablecerContrasena() {
   const modal = await this.modalCtrl.create({

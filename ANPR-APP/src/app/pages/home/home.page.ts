@@ -36,13 +36,12 @@ const TYPE_IMAGE_MAP_ID: Record<number, string> = {
 };
 const TYPE_IMAGE_MAP_NAME: Record<string, string> = {
   'auto': 'assets/images/vehiculos/auto.png',
+  'carro': 'assets/images/vehiculos/auto.png',
   'moto': 'assets/images/vehiculos/moto.png',
   'bicicletas': 'assets/images/vehiculos/bici.png',
-  'Bicicletas': 'assets/images/vehiculos/bici.png',
   'bicicleta': 'assets/images/vehiculos/bici.png',
-  'car': 'assets/images/vehiculos/auto.png',
-  'motorcycle': 'assets/images/vehiculos/moto.png',
 };
+
 const DEFAULT_VEHICLE_IMG = 'assets/images/vehiculos/default.png';
 const OTHER_VEHICLE_IMG = 'assets/images/vehiculos/otros.png';
 
@@ -87,35 +86,57 @@ export class HomePageC implements OnInit, OnDestroy {
     this.username = await this.general.getUsername();
   }
 
-  private mapFilterToType(filter: FilterKey): string | null {
-    if (filter === 'car') return 'Auto';
-    if (filter === 'moto') return 'Moto';
-    if (filter === 'bike') return 'Bicicletas';
-    return null; // all
-  }
+ private mapFilterToType(filter: FilterKey): string | null {
+  if (filter === 'car') return 'Carro';
+  if (filter === 'moto') return 'Moto';
+  if (filter === 'bike') return 'Bicicleta';
+  return null;
+}
+
 
   async loadVehiclesFromApi() {
-    this.loadingVehicles = true;
-    try {
-      const clientId = await this.general.getClientId();
-      if (!clientId) {
-        this.allVehicles = [];
-        this.selectedVehicle = null;
-        return;
-      }
-      const resp = await firstValueFrom(
-        this.general.get<ApiResponse<VehicleDto[]>>(`Vehicle/byClient/${clientId}`)
-      );
-      this.allVehicles = resp?.data ?? [];
-      this.autoPickFirst();
-    } catch (e) {
-      console.error('Error cargando vehículos', e);
+  this.loadingVehicles = true;
+  try {
+    const clientId = await this.general.getClientId();
+    console.log('🧠 CLIENT ID guardado en Preferences:', clientId);
+
+    if (!clientId) {
+      console.warn('⚠️ No se encontró clientId en Preferences');
       this.allVehicles = [];
       this.selectedVehicle = null;
-    } finally {
       this.loadingVehicles = false;
+      return;
     }
+
+    const resp = await firstValueFrom(
+      this.general.get<ApiResponse<VehicleDto[]>>(`Vehicle/byClient/${clientId}`)
+    );
+
+    if (!resp || !resp.success) {
+      console.error('❌ Respuesta inválida del backend', resp);
+      this.allVehicles = [];
+      this.selectedVehicle = null;
+      return;
+    }
+
+    this.allVehicles = resp.data ?? [];
+
+    if (this.allVehicles.length === 0) {
+      console.info('ℹ️ Cliente sin vehículos registrados');
+    } else {
+      console.log(`✅ Vehículos cargados: ${this.allVehicles.length}`);
+      console.table(this.allVehicles);
+    }
+
+    this.autoPickFirst();
+  } catch (e: any) {
+    console.error('❌ Error cargando vehículos:', e);
+    this.allVehicles = [];
+    this.selectedVehicle = null;
+  } finally {
+    this.loadingVehicles = false;
   }
+}
 
   get filteredVehicles(): VehicleDto[] {
     const type = this.mapFilterToType(this.selectedFilter);
@@ -128,10 +149,17 @@ export class HomePageC implements OnInit, OnDestroy {
     this.autoPickFirst();
   }
 
-  autoPickFirst() {
-    const list = this.filteredVehicles;
-    this.selectedVehicle = list.length > 0 ? list[0] : null;
+ autoPickFirst() {
+  const list = this.filteredVehicles;
+  if (list.length > 0) {
+    this.selectedVehicle = list[0];
+  } else if (this.allVehicles.length > 0) {
+    this.selectedVehicle = this.allVehicles[0];
+  } else {
+    this.selectedVehicle = null;
   }
+}
+
 
   onPick(v: VehicleDto) {
     this.selectedVehicle = v;
