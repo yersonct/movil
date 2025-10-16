@@ -69,7 +69,7 @@ export class ProfilePage implements OnInit {
       this.generalService.getUserById(Number(userIdStr)).subscribe({
         next: (res: any) => {
           this.userProfile = res.data;
-          console.log("✅ Perfil cargado:", this.userProfile);
+          // console.log("✅ Perfil cargado:", this.userProfile);
 
           if (clientId) {
             this.loadVehicles(clientId);
@@ -88,7 +88,7 @@ export class ProfilePage implements OnInit {
     this.generalService.getVehiclesByClientId(clientId).subscribe({
       next: (res: any) => {
         this.Vehicles = res.data ?? res;
-        console.log("🚗 Vehículos cargados:", this.Vehicles);
+        // console.log("🚗 Vehículos cargados:", this.Vehicles);
       },
       error: (err) => console.error("❌ Error cargando vehículos:", err)
     });

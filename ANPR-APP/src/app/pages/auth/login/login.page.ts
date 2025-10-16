@@ -11,7 +11,7 @@ import { HelperService } from 'src/app/generic/services/helper-service.service';
 import { LoginResponse } from 'src/app/generic/models/IEntitys';
 import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
-
+import { ApiResponse, Client } from 'src/app/generic/models/IEntitys';
 // interface LoginResponse {
 //   success: boolean;
 //   message?: string;
@@ -72,33 +72,38 @@ export class LoginPage {
   await this.general.setUsername(this.LoginDto.username);
   await this.general.setUserId(data.userId);
 
-  // 🔹 Intentar obtener el clientId desde el backend
-  try {
-    const clientResp = await firstValueFrom(
-      this.general.get<any>(`Client/by-user/${data.userId}`)
-    );
+   try {
+        const clientResp = await firstValueFrom(
+          this.general.get<ApiResponse<Client>>(`Client/by-user/${data.userId}`)
+        );
 
-    if (clientResp?.success && clientResp.data?.id) {
-      await this.general.setClientId(clientResp.data.id);
-      console.log('🧠 Client ID guardado correctamente:', clientResp.data.id);
+        // console.log('📦 Respuesta del endpoint Client/by-user:', clientResp);
+
+        if (clientResp?.success && clientResp.data?.id) {
+          await this.general.setClientId(clientResp.data.id);
+          // console.log('🧠 Client ID guardado correctamente:', clientResp.data.id);
+        } else {
+          console.warn('⚠️ Este usuario no tiene cliente asociado.');
+        }
+      } catch (error) {
+        // console.error('❌ Error obteniendo clientId:', error);
+      }
+
+      // 🔹 3. Continuar solo después de guardar todo
+      await this.helper.showToast(res.message || 'Bienvenido 👋');
+      await loader.dismiss();
+      this.router.navigateByUrl('/tabs/home', { replaceUrl: true });
     } else {
-      console.warn('⚠️ Este usuario no tiene cliente asociado.');
+      await loader.dismiss();
+      this.helper.showAlert(res?.message || 'Credenciales incorrectas');
     }
-  } catch (error) {
-    console.error('❌ Error obteniendo clientId:', error);
-  }
 
-  await this.helper.showToast(res.message || 'Bienvenido 👋');
-  this.router.navigateByUrl('/tabs/home', { replaceUrl: true });
-} else {
-  this.helper.showAlert(res?.message || 'Credenciales incorrectas');
-}
   } catch (err: any) {
+    await loader.dismiss();
     this.helper.showAlert(err.message || 'Error inesperado');
     console.error('Error en login:', err);
   } finally {
     this.loading = false;
-    loader.dismiss();
   }
 }
 

@@ -4,7 +4,7 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from 'src/environments/environment.prod';
-import { User,Vehicle } from '../models/IEntitys';
+import { ApiResponse, Client, User,Vehicle } from '../models/IEntitys';
 
 @Injectable({ providedIn: 'root' })
 export class GeneralService {
@@ -154,4 +154,11 @@ async getClientId(): Promise<number | null> {
       .delete<T>(`${this.baseUrl}/${endpoint}/${id}`)
       .pipe(catchError((err) => this.handleError(err)));
   }
+  getClientByUserId(userId: number) {
+  return this.get<ApiResponse<Client>>(`Client/by-user/${userId}`);
+}
+
+
+  
+
 }

@@ -94,14 +94,14 @@ export class HomePageC implements OnInit, OnDestroy {
 }
 
 
-  async loadVehiclesFromApi() {
+async loadVehiclesFromApi() {
   this.loadingVehicles = true;
   try {
     const clientId = await this.general.getClientId();
-    console.log('🧠 CLIENT ID guardado en Preferences:', clientId);
+    // console.log('🧠 CLIENT ID guardado en Preferences:', clientId);
 
     if (!clientId) {
-      console.warn('⚠️ No se encontró clientId en Preferences');
+      // console.warn('⚠️ No se encontró clientId en Preferences');
       this.allVehicles = [];
       this.selectedVehicle = null;
       this.loadingVehicles = false;
@@ -112,31 +112,34 @@ export class HomePageC implements OnInit, OnDestroy {
       this.general.get<ApiResponse<VehicleDto[]>>(`Vehicle/byClient/${clientId}`)
     );
 
-    if (!resp || !resp.success) {
-      console.error('❌ Respuesta inválida del backend', resp);
+    // 🔍 Manejo flexible según respuesta
+    if (!resp) {
+      // console.error('❌ Respuesta nula del backend');
       this.allVehicles = [];
-      this.selectedVehicle = null;
       return;
     }
 
-    this.allVehicles = resp.data ?? [];
-
-    if (this.allVehicles.length === 0) {
-      console.info('ℹ️ Cliente sin vehículos registrados');
+    // ✅ Manejo de éxito y de "sin resultados"
+    if (resp.success && Array.isArray(resp.data)) {
+      this.allVehicles = resp.data;
+      // console.log(`✅ Vehículos cargados: ${this.allVehicles.length}`);
+      // console.table(this.allVehicles);
     } else {
-      console.log(`✅ Vehículos cargados: ${this.allVehicles.length}`);
-      console.table(this.allVehicles);
+      // console.warn('ℹ️ No se encontraron vehículos para este cliente.');
+      this.allVehicles = [];
     }
 
     this.autoPickFirst();
+
   } catch (e: any) {
-    console.error('❌ Error cargando vehículos:', e);
+    // console.error('❌ Error cargando vehículos:', e);
     this.allVehicles = [];
     this.selectedVehicle = null;
   } finally {
     this.loadingVehicles = false;
   }
 }
+
 
   get filteredVehicles(): VehicleDto[] {
     const type = this.mapFilterToType(this.selectedFilter);

@@ -51,9 +51,9 @@ export interface Vehicle extends IBaseEntity {
 }
 
 export interface Client extends IBaseEntity {
-  personaId: number;
-  person: string;
-  name: string;
+  personId: number;
+  person: string | null;
+  // name: string;
 }
 
 export interface RegisteredVehicle extends IBaseEntity {
@@ -105,4 +105,10 @@ export interface VehicleDto {
   activeSlotId?: number | null;
   activeSlotName?: string | null;
   activeEntryDate?: string | null; // ISO
+}
+export interface ApiResponse<T> {
+  data: T | null;
+  success: boolean;
+  message: string;
+  error?: string | null;
 }
