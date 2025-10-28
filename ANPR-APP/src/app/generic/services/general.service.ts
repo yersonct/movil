@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError ,BehaviorSubject} from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from 'src/environments/environment.prod';
@@ -27,6 +27,8 @@ export class GeneralService {
   private baseUrl = (environment as any).apiURL || (environment as any).apiUrl;
 
   constructor(private http: HttpClient) {}
+  private usernameSubject = new BehaviorSubject<string | null>(null);
+  username$ = this.usernameSubject.asObservable();
 
   // ==========================
   // Helpers Preferences
@@ -73,8 +75,16 @@ export class GeneralService {
     return Array.isArray(r) ? r : (() => { try { return JSON.parse(r) } catch { return [] } })();
   }
 
-  async setUsername(username: string) { await this.setPref('username', username); }
-  async getUsername(): Promise<string | null> { return await this.getPref<string>('username'); }
+  async setUsername(username: string) {
+    await this.setPref('username', username);
+    this.usernameSubject.next(username); 
+  }
+
+  async getUsername(): Promise<string | null> {
+    const name = await this.getPref<string>('username');
+    this.usernameSubject.next(name);
+    return name;
+  }
 
   async setUserId(userId: number | string) { await this.setPref('userId', String(userId)); }
   async getUserId(): Promise<string | null> {

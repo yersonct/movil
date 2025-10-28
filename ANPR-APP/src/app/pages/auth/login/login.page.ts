@@ -61,12 +61,12 @@ export class LoginPage {
 
   try {
     const res = await firstValueFrom(
-      this.general.post<LoginResponse>('User/login', this.LoginDto)
+      this.general.post<LoginResponse>('Auth/login', this.LoginDto)
     );
 
     const data = res?.data;
     if (res?.success && data?.token) {
-  // ✅ Guardar sesión básica
+
   await this.general.setAuthToken(data.token);
   await this.general.setUserRoles(data.roles || []);
   await this.general.setUsername(this.LoginDto.username);
