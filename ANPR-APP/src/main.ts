@@ -4,7 +4,7 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalo
 import { routes } from './app/app.routes';
 import { AppComponent } from './app/app.component';
 import { provideHttpClient } from '@angular/common/http';
-
+import { provideAnimations } from '@angular/platform-browser/animations';
 // 👇 Importar Ionicons y el registro de íconos
 import { addIcons } from 'ionicons';
 import { home, fastFoodSharp,settingsOutline,person,lockClosedOutline,createOutline, camera,car,enterOutline,exitOutline,carOutline,businessOutline,refreshOutline,informationCircleOutline,navigateOutline,bicycleOutline,trailSignOutline, closeOutline } from 'ionicons/icons';
@@ -37,5 +37,6 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular(),
     provideRouter(routes, withPreloading(PreloadAllModules)),
     provideHttpClient(),
+    provideAnimations(),
   ],
 });

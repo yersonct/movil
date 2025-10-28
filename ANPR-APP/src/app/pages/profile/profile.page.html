@@ -2,7 +2,6 @@
   <ion-toolbar class="toolbar">
     <div class="greeting">
       <div class="profile-info">
-        <!-- <div class="tiny">Mi Perfil</div> -->
         <div class="name">Mi perfil</div>
       </div>
     </div>
@@ -11,7 +10,6 @@
       <ion-button fill="clear" (click)="refreshProfile()">
         <ion-icon name="refresh-outline"></ion-icon>
       </ion-button>
-
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -30,28 +28,23 @@
         </div>
 
         <div class="user-info">
-          <div class="user-name">{{ userProfile?.username }} </div>
+          <div class="user-name">{{ userProfile?.username }}</div>
           <div class="user-email">{{ userProfile?.email }}</div>
           <div class="user-personName">{{ userProfile?.personName }}</div>
-         
         </div>
 
         <ion-button fill="clear" size="small" class="edit-profile-btn" (click)="changeAvatar()">
           <ion-icon name="settings-outline"></ion-icon>
-
         </ion-button>
       </div>
-    
-
-
     </div>
 
     <!-- Mis Vehículos -->
-   <div class="vehicles-section">
+    <div class="vehicles-section">
       <div class="section-header">
         <div class="section-title">
           <div class="tiny muted">Mis Vehículos</div>
-          <div class="section-count">{{ Vehicles.length }} registrados</div>
+          <div class="section-count">{{ vehicles.length }} registrados</div>
         </div>
         <ion-button size="small" fill="clear" (click)="addVehicle()">
           <ion-icon name="add-circle-outline"></ion-icon>
@@ -59,36 +52,40 @@
         </ion-button>
       </div>
 
-     <div class="vehicles-list">
-  <div class="vehicle-item" *ngFor="let vehicle of Vehicles" (click)="editVehicle(vehicle)">
-    <div class="vehicle-image">
-      <ion-icon name="car-outline"></ion-icon>
-    </div>
+      <div class="vehicles-list">
+        <div
+          class="vehicle-item"
+          *ngFor="let vehicle of vehicles"
+          (click)="editVehicle(vehicle)"
+        >
+          <div class="vehicle-image">
+            <ion-icon name="car-outline"></ion-icon>
+          </div>
 
-    <div class="vehicle-details">
-      <div class="vehicle-plate">{{ vehicle.plate }}</div>
-      <div class="vehicle-info">
-        <span class="vehicle-type">{{ vehicle.typeVehicle }}</span>
-        <span class="vehicle-color">Color: {{ vehicle.color }}</span>
+          <div class="vehicle-details">
+            <div class="vehicle-plate">{{ vehicle.plate }}</div>
+            <div class="vehicle-info">
+           <span class="vehicle-type">
+            {{ vehicleTypeNames[vehicle.typeVehicleId] || 'Desconocido' }}
+          </span>
+              <span class="vehicle-color">Color: {{ vehicle.color }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-vehicles" *ngIf="vehicles.length === 0">
+          <ion-icon name="car-outline"></ion-icon>
+          <div class="empty-title">Sin vehículos registrados</div>
+          <div class="empty-text">Agrega tu primer vehículo para comenzar</div>
+          <ion-button (click)="addVehicle()">
+            <ion-icon name="add" slot="start"></ion-icon>
+            Agregar Vehículo
+          </ion-button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="empty-vehicles" *ngIf="Vehicles.length === 0">
-    <ion-icon name="car-outline"></ion-icon>
-    <div class="empty-title">Sin vehículos registrados</div>
-    <div class="empty-text">Agrega tu primer vehículo para comenzar</div>
-    <ion-button (click)="addVehicle()">
-      <ion-icon name="add" slot="start"></ion-icon>
-      Agregar Vehículo
-    </ion-button>
-  </div>
-</div>
-
-    
-
-  <br>
-  
+    <br>
 
     <!-- Acciones del Perfil -->
     <div class="profile-actions">
@@ -120,7 +117,8 @@
           fill="outline"
           color="danger"
           class="logout-btn"
-          (click)="logout()">
+          (click)="logout()"
+        >
           <ion-icon name="log-out-outline" slot="start"></ion-icon>
           Cerrar Sesión
         </ion-button>
@@ -129,11 +127,10 @@
 
     <!-- Información de la App -->
     <div class="app-info">
-      <div class="app-copyright">© 2024 ParkingApp. Todos los derechos reservados.</div>
+      <div class="app-copyright">
+        © 2024 ParkingApp. Todos los derechos reservados.
+      </div>
     </div>
 
   </div>
-  </div>
-
-  
 </ion-content>

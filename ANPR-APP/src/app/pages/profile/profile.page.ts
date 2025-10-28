@@ -23,6 +23,11 @@ interface UserStats {
   imports: [CommonModule, FormsModule, IonicModule]
 })
 export class ProfilePage implements OnInit {
+  vehicleTypeNames: Record<number, string> = {
+  1: 'Carro',
+  2: 'Moto',
+  3: 'Camión'
+};
   userProfile: User = {
     id: 0,
     username: '',
@@ -34,7 +39,7 @@ export class ProfilePage implements OnInit {
     password: ''
   };
 
-  Vehicles: Vehicle[] = [];
+  vehicles: Vehicle[] = [];
 
   userStats: UserStats = {
     totalVisits: 42,
@@ -62,37 +67,54 @@ export class ProfilePage implements OnInit {
   // Carga de datos
   // ==========================
   async loadUserData() {
-    const userIdStr = await this.generalService.getUserId();
-    const clientId = await this.generalService.getClientId();
+  const userIdStr = await this.generalService.getUserId();
 
-    if (userIdStr) {
-      this.generalService.getUserById(Number(userIdStr)).subscribe({
-        next: (res: any) => {
-          this.userProfile = res.data;
-          // console.log("✅ Perfil cargado:", this.userProfile);
+  if (userIdStr) {
+    this.generalService.getClientByUserId(Number(userIdStr)).subscribe({
+      next: (res: any) => {
+        console.log("📦 Respuesta del endpoint Client/by-user:", res);
 
-          if (clientId) {
-            this.loadVehicles(clientId);
-          }
-        },
-        error: (err) => {
-          console.error('Error cargando perfil:', err);
-        }
-      });
-    } else {
-      console.warn("⚠️ No se encontró userId en storage");
-    }
+        // 🔹 Guarda todo el cliente
+        this.userProfile = {
+          id: res.id,
+          username: res.person?.firstName,
+          email: res.person?.email,
+          personName: `${res.person?.firstName || ''} ${res.person?.lastName || ''}`,
+          personId: res.personId,
+          asset: res.asset,
+          isDeleted: res.isDeleted,
+          password: ''
+        };
+
+        // 🔹 Guarda vehículos
+        this.vehicles = res.vehicles || [];
+
+        console.log("🚗 Vehículos cargados:", this.vehicles);
+      },
+      error: (err) => {
+        console.error('❌ Error cargando perfil:', err);
+      }
+    });
+  } else {
+    console.warn("⚠️ No se encontró userId en storage");
   }
+}
+
 
   loadVehicles(clientId: number) {
-    this.generalService.getVehiclesByClientId(clientId).subscribe({
-      next: (res: any) => {
-        this.Vehicles = res.data ?? res;
-        // console.log("🚗 Vehículos cargados:", this.Vehicles);
-      },
-      error: (err) => console.error("❌ Error cargando vehículos:", err)
-    });
-  }
+  this.generalService.getVehiclesByClientId(clientId).subscribe({
+    next: (res: any) => {
+      if (res.success) {
+        this.vehicles = res.data;
+        console.log("🚗 Vehículos cargados:", this.vehicles);
+      } else {
+        console.warn("⚠️ Sin vehículos:", res.message);
+        this.vehicles = []; // vacía por si acaso
+      }
+    },
+    error: (err) => console.error("❌ Error cargando vehículos:", err.message || err)
+  });
+}
 
   // ==========================
   // Header

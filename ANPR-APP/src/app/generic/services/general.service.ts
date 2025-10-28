@@ -13,16 +13,15 @@ export class GeneralService {
     // }
     // Paso 1: solicitar código
   requestPasswordReset(email: string) {
-    return this.post<any>('User/request-password-reset', { email });
+    return this.post<any>('PasswordRecovery/request', { email });
   }
 
-  //  Paso 2: verificar código
   verifyCode(email: string, code: string) {
-    return this.post<any>('User/verify-code', { email, code });
+    return this.post<any>('PasswordRecovery/verify', { email, code });
   }
 
   resetPassword(email: string, code: string, newPassword: string) {
-    return this.post<any>('User/reset-password', { email, code, newPassword });
+    return this.post<any>('PasswordRecovery/reset', { email, code, newPassword });
   }
   private baseUrl = (environment as any).apiURL || (environment as any).apiUrl;
 
@@ -137,9 +136,12 @@ async getClientId(): Promise<number | null> {
   getUserById(id: number) {
     return this.getById<User>('User', id);
   }
- getVehiclesByClientId(clientId: number) {
-  return this.get<Vehicle[]>(`Vehicle/select?clientId=${clientId}`);
-  }
+// getVehiclesByClientId(clientId: number) {
+//   return this.get<ApiResponse<Vehicle[]>>(`Client/by-client?clientId=${clientId}`);
+// }
+getClientWithVehicles(clientId: number) {
+  return this.get<ApiResponse<Client>>(`Client/by-client?clientId=${clientId}`);
+}
   updateUser(user: Partial<User>) {
     return this.put<User>('User', user);
   }

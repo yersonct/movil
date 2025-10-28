@@ -19,6 +19,10 @@ export class ResetPasswordModalComponent {
   code = '';
   newPassword = '';
   loading = false;
+showInlineAlert: any;
+alertType: string|string[]|Set<string>|{ [klass: string]: any; }|null|undefined;
+alertMessage: any;
+form: any;
 
   constructor(
     private general: GeneralService,

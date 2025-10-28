@@ -77,11 +77,11 @@ export class LoginPage {
           this.general.get<ApiResponse<Client>>(`Client/by-user/${data.userId}`)
         );
 
-        // console.log('📦 Respuesta del endpoint Client/by-user:', clientResp);
+        console.log('📦 Respuesta del endpoint Client/by-user:', clientResp);
 
         if (clientResp?.success && clientResp.data?.id) {
           await this.general.setClientId(clientResp.data.id);
-          // console.log('🧠 Client ID guardado correctamente:', clientResp.data.id);
+          console.log('🧠 Client ID guardado correctamente:', clientResp.data.id);
         } else {
           console.warn('⚠️ Este usuario no tiene cliente asociado.');
         }
