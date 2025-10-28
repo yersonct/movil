@@ -1,0 +1,136 @@
+<ion-header class="header ion-no-border" [translucent]="true">
+  <ion-toolbar class="toolbar">
+    <div class="greeting">
+      <div class="profile-info">
+        <div class="name">Mi perfil</div>
+      </div>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button fill="clear" (click)="refreshProfile()">
+        <ion-icon name="refresh-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="dark">
+  <div class="content-padder">
+
+    <!-- Información del Usuario -->
+    <div class="user-card">
+      <div class="user-header">
+        <div class="user-avatar" (click)="changeAvatar()">
+          <img src="assets/images/avatar.png" [alt]="userProfile?.username" />
+          <div class="avatar-overlay">
+            <ion-icon name="camera-outline"></ion-icon>
+          </div>
+        </div>
+
+        <div class="user-info">
+          <div class="user-name">{{ userProfile?.username }}</div>
+          <div class="user-email">{{ userProfile?.email }}</div>
+          <div class="user-personName">{{ userProfile?.personName }}</div>
+        </div>
+
+        <ion-button fill="clear" size="small" class="edit-profile-btn" (click)="changeAvatar()">
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Mis Vehículos -->
+    <div class="vehicles-section">
+      <div class="section-header">
+        <div class="section-title">
+          <div class="tiny muted">Mis Vehículos</div>
+          <div class="section-count">{{ vehicles.length }} registrados</div>
+        </div>
+        <ion-button size="small" fill="clear" (click)="addVehicle()">
+          <ion-icon name="add-circle-outline"></ion-icon>
+          Agregar
+        </ion-button>
+      </div>
+
+      <div class="vehicles-list">
+        <div
+          class="vehicle-item"
+          *ngFor="let vehicle of vehicles"
+          (click)="editVehicle(vehicle)"
+        >
+          <div class="vehicle-image">
+            <ion-icon name="car-outline"></ion-icon>
+          </div>
+
+          <div class="vehicle-details">
+            <div class="vehicle-plate">{{ vehicle.plate }}</div>
+            <div class="vehicle-info">
+           <span class="vehicle-type">
+            {{ vehicleTypeNames[vehicle.typeVehicleId] || 'Desconocido' }}
+          </span>
+              <span class="vehicle-color">Color: {{ vehicle.color }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-vehicles" *ngIf="vehicles.length === 0">
+          <ion-icon name="car-outline"></ion-icon>
+          <div class="empty-title">Sin vehículos registrados</div>
+          <div class="empty-text">Agrega tu primer vehículo para comenzar</div>
+          <ion-button (click)="addVehicle()">
+            <ion-icon name="add" slot="start"></ion-icon>
+            Agregar Vehículo
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <br>
+
+    <!-- Acciones del Perfil -->
+    <div class="profile-actions">
+      <div class="action-group">
+        <ion-button fill="clear" class="action-btn" (click)="showHelp()">
+          <ion-icon name="help-circle-outline" slot="start"></ion-icon>
+          Ayuda y Soporte
+        </ion-button>
+
+        <ion-button fill="clear" class="action-btn" (click)="showPrivacyPolicy()">
+          <ion-icon name="shield-outline" slot="start"></ion-icon>
+          Privacidad
+        </ion-button>
+
+        <ion-button fill="clear" class="action-btn" (click)="showTerms()">
+          <ion-icon name="document-text-outline" slot="start"></ion-icon>
+          Términos y Condiciones
+        </ion-button>
+
+        <ion-button fill="clear" class="action-btn" (click)="rateApp()">
+          <ion-icon name="star-outline" slot="start"></ion-icon>
+          Calificar App
+        </ion-button>
+      </div>
+
+      <div class="logout-section">
+        <ion-button
+          expand="block"
+          fill="outline"
+          color="danger"
+          class="logout-btn"
+          (click)="logout()"
+        >
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Cerrar Sesión
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- Información de la App -->
+    <div class="app-info">
+      <div class="app-copyright">
+        © 2024 ParkingApp. Todos los derechos reservados.
+      </div>
+    </div>
+
+  </div>
+</ion-content>

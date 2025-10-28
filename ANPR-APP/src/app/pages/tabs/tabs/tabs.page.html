@@ -1,0 +1,18 @@
+<ion-tabs>
+  <ion-tab-bar slot="bottom" class="custom-tab-bar">
+    <ion-tab-button tab="home" (click)="goTo('home')" [class.active]="selectedTab === 'home'">
+      <ion-icon name="home-outline"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="ordenar" (click)="goTo('ordenar')" [class.active]="selectedTab === 'ordenar'">
+      <ion-icon name="car-outline"></ion-icon>
+      <ion-label>Vehículos</ion-label>
+    </ion-tab-button>
+
+    <ion-tab-button tab="user" (click)="goTo('user')" [class.active]="selectedTab === 'user'">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>Perfil</ion-label>
+    </ion-tab-button>
+  </ion-tab-bar>
+</ion-tabs>
